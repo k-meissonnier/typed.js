@@ -1,6 +1,6 @@
 // The MIT License (MIT)
 
-// Typed.js | Copyright (c) 2016 Matt Boldt | www.mattboldt.com
+// Typed.js | Copyright (c) 2014 Matt Boldt | www.mattboldt.com
 
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -137,6 +137,15 @@
 
 		// pass current string state to each function, types 1 char per call
 		typewrite: function(curString, curStrPos) {
+			var substr = curString.substr(curStrPos);
+
+			if(substr[0] === '§'){
+				this.backspace(curString, curStrPos, function(self){
+					curString = curString.substr(curStrPos + 1);
+					self.typewrite(curString, 0);
+				});
+				return;
+			}
 			// exit when stopped
 			if (this.stop === true) {
 				return;
@@ -162,6 +171,7 @@
 				// single ^ are removed from string
 				var charPause = 0;
 				var substr = curString.substr(curStrPos);
+
 				if (substr.charAt(0) === '^') {
 					var skip = 1; // skip atleast 1
 					if (/^\^\d+/.test(substr)) {
@@ -253,7 +263,7 @@
 
 		},
 
-		backspace: function(curString, curStrPos) {
+		backspace: function(curString, curStrPos, callback) {
 			// exit when stopped
 			if (this.stop === true) {
 				return;
@@ -314,11 +324,17 @@
 					// subtract characters one by one
 					curStrPos--;
 					// loop the function
-					self.backspace(curString, curStrPos);
+					self.backspace(curString, curStrPos, callback);
 				}
+
 				// if the stop number has been reached, increase
 				// array position to next string
 				else if (curStrPos <= self.stopNum) {
+					if(callback != undefined)
+					{
+						callback(self);
+						return;
+					}
 					self.arrayPos++;
 
 					if (self.arrayPos === self.strings.length) {
